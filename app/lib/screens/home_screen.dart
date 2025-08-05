@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'account_screen.dart';
 import 'settings_screen.dart';
+import 'orders_screen.dart';
+import 'create_order_screen.dart';
+import 'test_connection_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -119,6 +122,61 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
+                          
+                          SizedBox(height: 12),
+                          
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => OrdersScreen()),
+                                );
+                              },
+                              child: Text(
+                                'Xem đơn hàng của tôi',
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Color(0xFF388E3C),
+                                side: BorderSide(color: Color(0xFF388E3C)),
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ),
+                          
+                          SizedBox(height: 12),
+                          
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => TestConnectionScreen()),
+                                );
+                              },
+                              child: Text(
+                                'Test Backend Connection',
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.grey[600],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -201,7 +259,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _bookCollector() {
-    Navigator.pushNamed(context, '/select-waste');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CreateOrderScreen()),
+    );
   }
 
   final List<Widget> _screens = [];

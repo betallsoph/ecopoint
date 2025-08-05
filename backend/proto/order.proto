@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package ecopoint.order.v1;
+
+option go_package = "ecopoint-backend/proto";
+
+import "google/protobuf/timestamp.proto";
+import "proto/shared.proto";
+
+// Order service definition
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  rpc GetUserOrders(GetUserOrdersRequest) returns (GetUserOrdersResponse);
+  rpc GetAvailableOrders(GetAvailableOrdersRequest) returns (GetAvailableOrdersResponse);
+  rpc AcceptOrder(AcceptOrderRequest) returns (AcceptOrderResponse);
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse);
+  rpc CompleteOrder(CompleteOrderRequest) returns (CompleteOrderResponse);
+}
+
+// Messages
+message Order {
+  string id = 1;
+  string customer_id = 2;
+  string collector_id = 3;
+  OrderStatus status = 4;
+  repeated WasteType waste_types = 5;
+  double estimated_weight = 6;
+  double actual_weight = 7;
+  ecopoint.shared.v1.Address pickup_address = 8;
+  google.protobuf.Timestamp scheduled_time = 9;
+  google.protobuf.Timestamp completed_time = 10;
+  string notes = 11;
+  Payment payment = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+
+
+message Payment {
+  double amount = 1;
+  string currency = 2;
+  string method = 3;
+  bool is_paid = 4;
+  google.protobuf.Timestamp payment_time = 5;
+}
+
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_PENDING = 1;
+  ORDER_STATUS_ACCEPTED = 2;
+  ORDER_STATUS_IN_PROGRESS = 3;
+  ORDER_STATUS_COMPLETED = 4;
+  ORDER_STATUS_CANCELLED = 5;
+}
+
+enum WasteType {
+  WASTE_TYPE_UNSPECIFIED = 0;
+  WASTE_TYPE_PAPER = 1;
+  WASTE_TYPE_PLASTIC = 2;
+  WASTE_TYPE_METAL = 3;
+  WASTE_TYPE_GLASS = 4;
+  WASTE_TYPE_ELECTRONIC = 5;
+}
+
+// Request/Response messages
+message CreateOrderRequest {
+  string customer_id = 1;
+  repeated WasteType waste_types = 2;
+  double estimated_weight = 3;
+  ecopoint.shared.v1.Address pickup_address = 4;
+  google.protobuf.Timestamp scheduled_time = 5;
+  string notes = 6;
+}
+
+message CreateOrderResponse {
+  Order order = 1;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+  string user_id = 2;
+}
+
+message GetOrderResponse {
+  Order order = 1;
+}
+
+message GetUserOrdersRequest {
+  string user_id = 1;
+  string user_type = 2;
+}
+
+message GetUserOrdersResponse {
+  repeated Order orders = 1;
+}
+
+message GetAvailableOrdersRequest {
+  string collector_id = 1;
+}
+
+message GetAvailableOrdersResponse {
+  repeated Order orders = 1;
+}
+
+message AcceptOrderRequest {
+  string order_id = 1;
+  string collector_id = 2;
+}
+
+message AcceptOrderResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdateOrderStatusRequest {
+  string order_id = 1;
+  string user_id = 2;
+  OrderStatus status = 3;
+  double actual_weight = 4;
+  string notes = 5;
+}
+
+message UpdateOrderStatusResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CompleteOrderRequest {
+  string order_id = 1;
+  string collector_id = 2;
+  double actual_weight = 3;
+  string notes = 4;
+}
+
+message CompleteOrderResponse {
+  bool success = 1;
+  string message = 2;
+}

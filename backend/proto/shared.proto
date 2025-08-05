@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package ecopoint.shared.v1;
+
+option go_package = "ecopoint-backend/proto";
+
+// Shared types used across services
+
+message Address {
+  string street = 1;
+  string district = 2;
+  string city = 3;
+  double lat = 4;
+  double lng = 5;
+}
+
+message Vehicle {
+  string type = 1;
+  string license_plate = 2;
+}

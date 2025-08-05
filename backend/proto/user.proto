@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package ecopoint.user.v1;
+
+option go_package = "ecopoint-backend/proto";
+
+import "google/protobuf/timestamp.proto";
+import "proto/shared.proto";
+
+// User service definition
+service UserService {
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  rpc GetUserStats(GetUserStatsRequest) returns (GetUserStatsResponse);
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+}
+
+// Messages
+message User {
+  string id = 1;
+  string firebase_uid = 2;
+  string email = 3;
+  string display_name = 4;
+  string photo_url = 5;
+  string phone_number = 6;
+  UserType user_type = 7;
+  bool is_active = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+  ecopoint.shared.v1.Address address = 11;
+  ecopoint.shared.v1.Vehicle vehicle = 12;
+  double rating = 13;
+  bool is_online = 14;
+}
+
+
+
+enum UserType {
+  USER_TYPE_UNSPECIFIED = 0;
+  USER_TYPE_CUSTOMER = 1;
+  USER_TYPE_COLLECTOR = 2;
+}
+
+// Request/Response messages
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message UpdateUserRequest {
+  string user_id = 1;
+  string display_name = 2;
+  string phone_number = 3;
+  ecopoint.shared.v1.Address address = 4;
+  ecopoint.shared.v1.Vehicle vehicle = 5;
+}
+
+message UpdateUserResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetUserStatsRequest {
+  string user_id = 1;
+}
+
+message GetUserStatsResponse {
+  int64 total_orders = 1;
+  int64 completed_orders = 2;
+  double rating = 3;
+  double total_earnings = 4;
+  bool is_online = 5;
+}
+
+message CreateUserRequest {
+  string firebase_uid = 1;
+  string email = 2;
+  string display_name = 3;
+  string photo_url = 4;
+  UserType user_type = 5;
+}
+
+message CreateUserResponse {
+  User user = 1;
+}

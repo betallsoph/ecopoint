@@ -1,0 +1,180 @@
+# GraphQL Schema for ecoPoint
+
+scalar Time
+scalar Upload
+
+# Enums
+enum UserType {
+  CUSTOMER
+  COLLECTOR
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum WasteType {
+  PAPER
+  PLASTIC
+  METAL
+  GLASS
+  ELECTRONIC
+}
+
+# Types
+type User {
+  id: ID!
+  firebaseUID: String
+  email: String
+  displayName: String!
+  photoURL: String
+  phoneNumber: String
+  userType: UserType!
+  isActive: Boolean!
+  createdAt: Time!
+  updatedAt: Time!
+  address: Address
+  vehicle: Vehicle
+  rating: Float
+  isOnline: Boolean
+}
+
+type Address {
+  street: String!
+  district: String!
+  city: String!
+  lat: Float!
+  lng: Float!
+}
+
+type Vehicle {
+  type: String!
+  licensePlate: String!
+}
+
+type Order {
+  id: ID!
+  customerID: ID!
+  collectorID: ID
+  customer: User!
+  collector: User
+  status: OrderStatus!
+  wasteTypes: [WasteType!]!
+  estimatedWeight: Float!
+  actualWeight: Float
+  pickupAddress: Address!
+  scheduledTime: Time!
+  completedTime: Time
+  notes: String
+  payment: Payment!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Payment {
+  amount: Float!
+  currency: String!
+  method: String!
+  isPaid: Boolean!
+  paymentTime: Time
+}
+
+type UserStats {
+  totalOrders: Int!
+  completedOrders: Int!
+  rating: Float
+  totalEarnings: Float
+  isOnline: Boolean
+}
+
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+# Input Types
+input GoogleSignInInput {
+  idToken: String!
+  userType: UserType!
+}
+
+input CreateOrderInput {
+  wasteTypes: [WasteType!]!
+  estimatedWeight: Float!
+  pickupAddress: AddressInput!
+  scheduledTime: Time!
+  notes: String
+}
+
+input AddressInput {
+  street: String!
+  district: String!
+  city: String!
+  lat: Float!
+  lng: Float!
+}
+
+input UpdateProfileInput {
+  displayName: String
+  phoneNumber: String
+  address: AddressInput
+  vehicle: VehicleInput
+}
+
+input VehicleInput {
+  type: String!
+  licensePlate: String!
+}
+
+input CompleteOrderInput {
+  actualWeight: Float!
+  notes: String
+}
+
+# Root Types
+type Query {
+  # User queries
+  me: User
+  userStats: UserStats!
+  
+  # Order queries
+  myOrders: [Order!]!
+  availableOrders: [Order!]! # For collectors
+  order(id: ID!): Order
+  
+  # Analytics (future)
+  # systemStats: SystemStats
+}
+
+type Mutation {
+  # Authentication
+  googleSignIn(input: GoogleSignInInput!): AuthPayload!
+  refreshToken(refreshToken: String!): AuthPayload!
+  
+  # User mutations
+  updateProfile(input: UpdateProfileInput!): User!
+  setCollectorOnlineStatus(isOnline: Boolean!): User!
+  
+  # Order mutations
+  createOrder(input: CreateOrderInput!): Order!
+  acceptOrder(orderID: ID!): Order!
+  updateOrderStatus(orderID: ID!, status: OrderStatus!): Order!
+  completeOrder(orderID: ID!, input: CompleteOrderInput!): Order!
+  cancelOrder(orderID: ID!): Order!
+}
+
+type Subscription {
+  # Real-time order updates
+  orderUpdated(orderID: ID!): Order!
+  
+  # New orders for collectors
+  newOrderAvailable: Order!
+  
+  # Order status changes for customers
+  myOrderUpdated: Order!
+}

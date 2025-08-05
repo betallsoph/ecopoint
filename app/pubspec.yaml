@@ -37,6 +37,13 @@ dependencies:
   firebase_core: ^3.1.1
   firebase_auth: ^5.1.1
   google_sign_in: ^6.2.1
+  
+  # GraphQL
+  graphql_flutter: ^5.1.2
+  
+  # HTTP & Storage
+  http: ^1.1.0
+  flutter_secure_storage: ^9.0.0
 
 dev_dependencies:
   flutter_test:

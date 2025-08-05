@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'firebase_options.dart';
 import 'screens/auth_wrapper.dart'; // Import the new wrapper
+import 'services/graphql_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
@@ -16,29 +18,36 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Initialize GraphQL service
+  GraphQLService.instance.initialize();
+  
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ecoPoint',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: Color(0xFF388E3C), // xanh lá tươi
-        scaffoldBackgroundColor: Colors.white,
+    return GraphQLProvider(
+      client: ValueNotifier(GraphQLService.instance.client),
+      child: MaterialApp(
+        title: 'ecoPoint',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: Color(0xFF388E3C), // xanh lá tươi
+          scaffoldBackgroundColor: Colors.white,
+        ),
+        home: AuthWrapper(), // Use AuthWrapper as the home screen
+        routes: {
+          '/login': (context) => LoginScreen(),
+          '/home': (context) => HomeScreen(),
+          '/select-waste': (context) => SelectWasteScreen(),
+          '/confirm': (context) => ConfirmBookingScreen(),
+          '/waiting': (context) => WaitingForCollectorScreen(),
+          '/onway': (context) => CollectorOnWayScreen(),
+          '/finish': (context) => FinishCollectionScreen(),
+        },
       ),
-      home: AuthWrapper(), // Use AuthWrapper as the home screen
-      routes: {
-        '/login': (context) => LoginScreen(),
-        '/home': (context) => HomeScreen(),
-        '/select-waste': (context) => SelectWasteScreen(),
-        '/confirm': (context) => ConfirmBookingScreen(),
-        '/waiting': (context) => WaitingForCollectorScreen(),
-        '/onway': (context) => CollectorOnWayScreen(),
-        '/finish': (context) => FinishCollectionScreen(),
-      },
     );
   }
 }

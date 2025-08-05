@@ -1,14 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'graphql_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GraphQLService _graphqlService = GraphQLService.instance;
 
   // GETTER for USER stream to check auth state
   Stream<User?> get user => _auth.authStateChanges();
 
-  // SIGN IN WITH GOOGLE
+  // SIGN IN WITH GOOGLE - Updated to use GraphQL backend
   Future<User?> signInWithGoogle() async {
     try {
       // Trigger the authentication flow.
@@ -22,17 +25,52 @@ class AuthService {
       // Obtain the auth details from the request.
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-      // Create a new credential for Firebase.
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+      // Get Firebase ID token
+      final idToken = googleAuth.idToken;
+      if (idToken == null) {
+        print("No ID token received");
+        return null;
+      }
+
+      // Call GraphQL backend with Firebase ID token
+      final result = await _graphqlService.client.mutate(
+        MutationOptions(
+          document: gql(GraphQLMutations.googleSignIn),
+          variables: {
+            'input': {
+              'idToken': idToken,
+              'userType': 'CUSTOMER', // Default for customer app
+            },
+          },
+        ),
       );
 
-      // Sign in to Firebase with the credential and return the user.
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      return userCredential.user;
+      if (result.hasException) {
+        print("GraphQL Error: ${result.exception.toString()}");
+        return null;
+      }
+
+      final data = result.data?['googleSignIn'];
+      if (data != null) {
+        // Save tokens from backend
+        await _graphqlService.saveTokens(
+          data['accessToken'],
+          data['refreshToken'],
+        );
+
+        // Create a Firebase credential for local auth state
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        // Sign in to Firebase locally for auth state management
+        final UserCredential userCredential = await _auth.signInWithCredential(credential);
+        return userCredential.user;
+      }
+
+      return null;
     } catch (e) {
-      // It's good practice to handle errors, e.g., by logging them.
       print("Error during Google Sign-In: $e");
       return null;
     }

@@ -2,7 +2,10 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
@@ -35,32 +38,50 @@ func InitFirebase(configPath string) error {
 	return nil
 }
 
-// VerifyGoogleIDToken verifies Google ID token and returns user info
+// VerifyGoogleIDToken verifies Google ID token with Google's OAuth2 API
 func VerifyGoogleIDToken(idToken string) (*GoogleUserInfo, error) {
-	// For MVP, we'll use a simple verification
-	// In production, you should verify with Firebase Auth
+	// Use Google's tokeninfo endpoint to verify the ID token
+	url := "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken
 	
-	// TODO: Implement actual Firebase verification
-	// For now, we'll create a mock user for testing
-	return &GoogleUserInfo{
-		UID:     "mock_uid_" + idToken[:10],
-		Email:   "test@example.com",
-		Name:    "Test User",
-		Picture: "",
-	}, nil
-
-	// Production code would be:
-	/*
-	token, err := firebaseAuth.VerifyIDToken(context.Background(), idToken)
+	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to verify token: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("invalid token: status code %d", resp.StatusCode)
+	}
+
+	var tokenInfo struct {
+		Sub           string `json:"sub"`
+		Email         string `json:"email"`
+		EmailVerified string `json:"email_verified"`
+		Name          string `json:"name"`
+		Picture       string `json:"picture"`
+		Aud           string `json:"aud"`
+		Iss           string `json:"iss"`
+		Exp           string `json:"exp"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&tokenInfo); err != nil {
+		return nil, fmt.Errorf("failed to decode token info: %v", err)
+	}
+
+	// Verify the token is from Google
+	if tokenInfo.Iss != "https://accounts.google.com" && tokenInfo.Iss != "accounts.google.com" {
+		return nil, fmt.Errorf("invalid issuer: %s", tokenInfo.Iss)
+	}
+
+	// Verify email is verified
+	if tokenInfo.EmailVerified != "true" {
+		return nil, fmt.Errorf("email not verified")
 	}
 
 	return &GoogleUserInfo{
-		UID:     token.UID,
-		Email:   token.Claims["email"].(string),
-		Name:    token.Claims["name"].(string),
-		Picture: token.Claims["picture"].(string),
+		UID:     tokenInfo.Sub,
+		Email:   tokenInfo.Email,
+		Name:    tokenInfo.Name,
+		Picture: tokenInfo.Picture,
 	}, nil
-	*/
 }
