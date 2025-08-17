@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package ecopoint.account.v1;
+
+// Simple Empty message to avoid importing google types
+message Empty {}
+
+service AccountService {
+  rpc GetUser(GetUserRequest) returns (User);
+  rpc UpsertUser(UpsertUserRequest) returns (Empty);
+  rpc SetRole(SetRoleRequest) returns (Empty);
+  rpc ListAddresses(ListAddressesRequest) returns (ListAddressesResponse);
+  rpc UpsertDeviceToken(UpsertDeviceTokenRequest) returns (Empty);
+}
+
+message GetUserRequest { string user_id = 1; }
+
+message UpsertUserRequest {
+  string user_id = 1;
+  string email = 2;
+  string phone = 3;
+  string display_name = 4;
+  string avatar_url = 5;
+}
+
+message SetRoleRequest { string user_id = 1; string role = 2; }
+
+message ListAddressesRequest { string user_id = 1; }
+
+message ListAddressesResponse { repeated Address addresses = 1; }
+
+message UpsertDeviceTokenRequest {
+  string user_id = 1;
+  string token = 2;
+  string platform = 3; // ios | android | web
+}
+
+message User {
+  string user_id = 1;
+  string email = 2;
+  string phone = 3;
+  string display_name = 4;
+  string avatar_url = 5;
+}
+
+message Address {
+  uint64 id = 1;
+  string user_id = 2;
+  string label = 3;
+  string full_text = 4;
+  double lat = 5;
+  double lng = 6;
+  bool is_default = 7;
+}
+
+

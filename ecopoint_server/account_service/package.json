@@ -1,0 +1,26 @@
+{
+  "name": "account_service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node --esm src/cmd/smoke.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/cmd/smoke.js",
+    "bootstrap": "ts-node --esm src/cmd/bootstrap.ts",
+    "grpc-dev": "ts-node --esm src/grpc/server.ts",
+    "grpc-smoke": "ts-node --esm src/cmd/grpc_smoke.ts"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.4",
+    "@grpc/proto-loader": "^0.7.15",
+    "dotenv": "^16.4.5",
+    "mysql2": "^3.11.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

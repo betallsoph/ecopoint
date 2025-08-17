@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package ecopoint.collecting.v1;
+
+option go_package = "ecopoint/collecting_service/pb;pb";
+
+message Empty {}
+
+service CollectingService {
+  rpc CreateOrder(CreateOrderRequest) returns (Order);
+  rpc ListAvailableOrders(ListAvailableOrdersRequest) returns (ListAvailableOrdersResponse);
+  rpc AcceptOrder(AcceptOrderRequest) returns (Order);
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (Order);
+  rpc GetOrder(GetOrderRequest) returns (Order);
+  rpc ListMyActiveOrders(ListMyActiveOrdersRequest) returns (ListOrdersResponse);
+  rpc ListMyOrders(ListMyOrdersRequest) returns (ListOrdersResponse);
+}
+
+message Address { string full_text = 1; double lat = 2; double lng = 3; }
+message CustomerSnapshot { string display_name = 1; string phone = 2; }
+message WasteItem { string type = 1; double weight = 2; }
+
+message Order {
+  string id = 1;
+  string customer_id = 2;
+  string status = 3;
+  string accepted_by = 4;
+  Address pick_address_snapshot = 5;
+  CustomerSnapshot customer_snapshot = 6;
+  repeated WasteItem items = 7;
+  double total_weight = 8;
+  double estimated_price = 9;
+  double distance_km = 10;
+  int32 eta_minutes = 11;
+  string note = 12;
+  int64 version = 13;
+}
+
+message CreateOrderRequest {
+  string customer_id = 1;
+  Address pick_address = 2;
+  CustomerSnapshot customer_snapshot = 3;
+  repeated WasteItem items = 4;
+  double total_weight = 5;
+  double estimated_price = 6;
+  string note = 7;
+}
+
+message ListAvailableOrdersRequest { int32 limit = 1; }
+message ListAvailableOrdersResponse { repeated Order orders = 1; }
+
+message AcceptOrderRequest { string order_id = 1; string collector_id = 2; }
+
+message UpdateOrderStatusRequest { string order_id = 1; string status = 2; string collector_id = 3; }
+
+message GetOrderRequest { string order_id = 1; }
+message ListMyActiveOrdersRequest { string collector_id = 1; }
+message ListMyOrdersRequest { string customer_id = 1; int32 page = 2; int32 size = 3; }
+message ListOrdersResponse { repeated Order orders = 1; }
+
+
