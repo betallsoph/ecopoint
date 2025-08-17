@@ -1,0 +1,22 @@
+openapi: 3.0.0 
+
+info:
+  title: API cho Đồ án Thu gom rác
+  description: Tài liệu mô tả cách hoạt động của các API.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080 
+    description: Local server
+
+# Nơi định nghĩa cách bảo vệ API (ví dụ: dùng JWT)
+components:
+  securitySchemes:
+    # Đặt tên cho cơ chế bảo mật là "BearerAuth"
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # Chỉ rõ đây là token JWT
+
+# Nơi chúng ta sẽ định nghĩa tất cả các API
+paths:
