@@ -3,14 +3,15 @@ import { gql } from 'graphql-tag';
 export const userTypeDefs = gql`
   type User {
     id: ID!
+    firebaseUid: String!
     email: String!
     firstName: String!
     lastName: String!
-    phone: String!
+    phone: String
     role: UserRole!
     isActive: Boolean!
-    profileImage: String
-    address: Address
+    profileImageUrl: String
+    addresses: [Address!]!
     preferences: UserPreferences
     createdAt: String!
     updatedAt: String!
@@ -47,22 +48,20 @@ export const userTypeDefs = gql`
   }
 
   input CreateUserInput {
+    firebaseUid: String!
     email: String!
-    password: String!
     firstName: String!
     lastName: String!
-    phone: String!
+    phone: String
     role: UserRole = USER
-    address: AddressInput
-    preferences: UserPreferencesInput
+    profileImageUrl: String
   }
 
   input UpdateUserInput {
     firstName: String
     lastName: String
     phone: String
-    address: AddressInput
-    preferences: UserPreferencesInput
+    profileImageUrl: String
   }
 
   input AddressInput {
@@ -84,13 +83,11 @@ export const userTypeDefs = gql`
     theme: Theme
   }
 
-  input LoginInput {
-    email: String!
-    password: String!
+  input FirebaseAuthInput {
+    firebaseToken: String!
   }
 
   type AuthPayload {
-    token: String!
     user: User!
   }
 
@@ -101,11 +98,14 @@ export const userTypeDefs = gql`
   }
 
   type Mutation {
-    register(input: CreateUserInput!): AuthPayload!
-    login(input: LoginInput!): AuthPayload!
+    createUser(input: CreateUserInput!): AuthPayload!
+    authenticateUser(input: FirebaseAuthInput!): AuthPayload!
     updateProfile(input: UpdateUserInput!): User!
-    changePassword(currentPassword: String!, newPassword: String!): Boolean!
     deactivateUser(id: ID!): Boolean!
     activateUser(id: ID!): Boolean!
+    addAddress(input: AddressInput!): Address!
+    updateAddress(id: ID!, input: AddressInput!): Address!
+    deleteAddress(id: ID!): Boolean!
+    updatePreferences(input: UserPreferencesInput!): UserPreferences!
   }
 `;
