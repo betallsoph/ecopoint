@@ -19,8 +19,8 @@ class AuthWrapper extends StatelessWidget {
             ),
           );
         }
-        if (snapshot.hasData) {
-          // User is logged in
+        if (snapshot.hasData || AuthService.isDevMode) {
+          // User is logged in or in dev mode
           return HomeScreen();
         } else {
           // User is not logged in

@@ -58,6 +58,16 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void _devModeLogin(BuildContext context) async {
+    await _authService.devModeLogin();
+    // Dev mode will be set regardless of authentication success
+    // AuthWrapper will handle showing HomeScreen based on isDevMode flag
+    if (mounted) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => HomeScreen()));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,6 +117,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 // Google Sign-In Button
                 _buildGoogleLoginButton(text: 'Tiếp tục với Google', onPressed: () => _loginWithGoogle(context)),
+                
+                // Dev Mode Button (only in debug mode)
+                if (const bool.fromEnvironment('dart.vm.product') == false) ...[
+                  SizedBox(height: 24),
+                  _buildDevModeButton(text: '🚀 Dev Mode (Bỏ qua đăng nhập)', onPressed: () => _devModeLogin(context)),
+                ],
                 
                 SizedBox(height: 40),
             ],
@@ -170,6 +186,24 @@ class _LoginScreenState extends State<LoginScreen> {
           side: BorderSide(color: Color(0xFF388E3C), width: 1.5),
           foregroundColor: Color(0xFF388E3C),
           padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+    );
+  }
+
+  // Button for Dev Mode Login
+  Widget _buildDevModeButton({required String text, required VoidCallback onPressed}) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(Icons.developer_mode, size: 20),
+        label: Text(text, style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 14)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orange,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),

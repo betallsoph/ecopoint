@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'edit_address_screen.dart';
+import '../widgets/info_tile.dart';
 
 enum TransportOption { van, truck, bike }
 
@@ -30,16 +31,33 @@ class _AccountScreenState extends State<AccountScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Địa chỉ
-                    _buildInfoTile(
+                    InfoTile(
                       icon: Icons.location_on,
                       title: 'Địa chỉ',
                       value: address,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditAddressScreen(
+                              currentAddress: address,
+                              currentPhone: phone,
+                              onSave: (newAddress, newPhone) {
+                                setState(() {
+                                  address = newAddress;
+                                  phone = newPhone;
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     ),
 
                     SizedBox(height: 16),
 
                     // Số điện thoại
-                    _buildInfoTile(
+                    InfoTile(
                       icon: Icons.phone,
                       title: 'Số điện thoại',
                       value: phone,
@@ -183,51 +201,6 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  Widget _buildInfoTile({
-    required IconData icon,
-    required String title,
-    required String value,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFF5FBF2),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Color(0xFF388E3C).withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      padding: EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Icon(icon, color: Color(0xFF388E3C)),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.bold, 
-                        fontSize: 21,
-                        color: Color(0xFF388E3C))),
-                SizedBox(height: 4),
-                Text(
-                    title == 'Địa chỉ' ? value.replaceAll(', ', ',\n') : value,
-                    style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 16, 
-                        fontWeight: FontWeight.w400),
-                    maxLines: null,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildTransportTile({
     required TransportOption option,

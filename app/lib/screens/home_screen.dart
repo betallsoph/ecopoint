@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'account_screen.dart';
 import 'settings_screen.dart';
+import '../widgets/custom_bottom_navigation_bar.dart';
+import '../widgets/service_card.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -221,35 +223,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: Color(0xFF388E3C),
-        unselectedItemColor: Color(0xFF388E3C).withOpacity(0.5),
-        selectedLabelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w500,
-        ),
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Trang chủ',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Tài khoản',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Cài đặt',
-          ),
-        ],
       ),
     );
   }

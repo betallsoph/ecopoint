@@ -4,6 +4,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  
+  // Static dev mode flag
+  static bool isDevMode = true;
 
   // GETTER for USER stream to check auth state
   Stream<User?> get user => _auth.authStateChanges();
@@ -64,6 +67,29 @@ class AuthService {
       codeSent: codeSent,
       codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
     );
+  }
+
+  // DEV MODE LOGIN (for development only)
+  Future<User?> devModeLogin() async {
+    try {
+      // Set dev mode flag
+      isDevMode = true;
+      
+      // Try to sign in with Google first (most reliable)
+      final user = await signInWithGoogle();
+      if (user != null) {
+        return user;
+      }
+      
+      // If Google fails, try anonymous sign in
+      final UserCredential userCredential = await _auth.signInAnonymously();
+      return userCredential.user;
+    } catch (e) {
+      print("Error during dev mode login: $e");
+      // Even if authentication fails, set dev mode flag so AuthWrapper knows
+      isDevMode = true;
+      return null;
+    }
   }
 
   // SIGN OUT

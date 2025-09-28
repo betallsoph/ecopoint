@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import '../widgets/option_tile.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -13,30 +14,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   ThemeOption _themeOption = ThemeOption.system;
   LanguageOption _langOption = LanguageOption.vi;
 
-  Widget _buildOptionTile({required String title, required Widget child}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.bold,
-              fontSize: 21,
-              color: Color(0xFF388E3C),
-            ),
-          ),
-          SizedBox(height: 8),
-          child,
-        ],
-      ),
-    );
-  }
 
   Widget _buildThemeSelector() {
-    return _buildOptionTile(
+    return OptionTile(
       title: 'Chế độ giao diện',
       child: Column(
         children: [
@@ -92,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final String viLabel = _langOption == LanguageOption.vi ? 'Tiếng Việt' : 'Vietnamese';
     final String enLabel = _langOption == LanguageOption.vi ? 'Tiếng Anh' : 'English';
 
-    return _buildOptionTile(
+    return OptionTile(
       title: 'Ngôn ngữ',
       child: Row(
         children: [

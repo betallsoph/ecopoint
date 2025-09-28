@@ -6,9 +6,7 @@ class CollectorOnWayScreen extends StatefulWidget {
   _CollectorOnWayScreenState createState() => _CollectorOnWayScreenState();
 }
 
-class _CollectorOnWayScreenState extends State<CollectorOnWayScreen> with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
+class _CollectorOnWayScreenState extends State<CollectorOnWayScreen> {
   Timer? _navigationTimer;
   int _estimatedTime = 15; // minutes
   Timer? _timeTimer;
@@ -16,20 +14,6 @@ class _CollectorOnWayScreenState extends State<CollectorOnWayScreen> with Ticker
   @override
   void initState() {
     super.initState();
-    
-    // Pulse animation for the car icon
-    _pulseController = AnimationController(
-      duration: Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    _pulseAnimation = Tween<double>(
-      begin: 0.9,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-    _pulseController.repeat(reverse: true);
     
     // Auto navigate to finish screen after 10 seconds
     _navigationTimer = Timer(Duration(seconds: 10), () {
@@ -50,7 +34,6 @@ class _CollectorOnWayScreenState extends State<CollectorOnWayScreen> with Ticker
 
   @override
   void dispose() {
-    _pulseController.dispose();
     _navigationTimer?.cancel();
     _timeTimer?.cancel();
     super.dispose();
@@ -85,31 +68,23 @@ class _CollectorOnWayScreenState extends State<CollectorOnWayScreen> with Ticker
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                    // Animated car icon
-                    AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _pulseAnimation.value,
-                          child: Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Color(0xFF388E3C).withOpacity(0.1),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Color(0xFF388E3C),
-                                width: 3,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.directions_car,
-                              size: 60,
-                              color: Color(0xFF388E3C),
-                            ),
-                          ),
-                        );
-                      },
+                    // Static car icon
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: Color(0xFF388E3C).withOpacity(0.1),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Color(0xFF388E3C),
+                          width: 3,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.directions_car,
+                        size: 60,
+                        color: Color(0xFF388E3C),
+                      ),
                     ),
                     
                     SizedBox(height: 32),

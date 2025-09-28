@@ -22,7 +22,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		FOY7vpJip3gno6JyEy5+7B3PpUk=
+		UY4gnMXC7t+5Z19F6+s76UUcOVY=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -33,10 +33,6 @@
 	<dict>
 		<key>Headers/FLTGoogleSignInPlugin.h</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			Ox6zydStBBl5fVTu+o8DFqBFnq0=
-			</data>
 			<key>hash2</key>
 			<data>
 			JWNoNNO4Q2im6y73tW3R836dVdFhBrEP0u2vdO9LYV8=
@@ -44,10 +40,6 @@
 		</dict>
 		<key>Headers/FLTGoogleSignInPlugin_Test.h</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			th0UgVWQFSTQtJ685kUPKwC51Zk=
-			</data>
 			<key>hash2</key>
 			<data>
 			aG64IbBAzC7kxW/RQYApL0J6hGnGs1ZGrAW8cnzpJgg=
@@ -55,10 +47,6 @@
 		</dict>
 		<key>Headers/google_sign_in_ios-umbrella.h</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			RrqM4xUyvP2T3hCL19NgC7jfqbc=
-			</data>
 			<key>hash2</key>
 			<data>
 			phjaL5ZvnN4HWh+cBiDIdEw05Yq1ag54r6ehOOPbODU=
@@ -66,10 +54,6 @@
 		</dict>
 		<key>Headers/messages.g.h</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			ftB7FbvQCCy0DOi/uquoS0Mpm9s=
-			</data>
 			<key>hash2</key>
 			<data>
 			JiLn3bsJApJ0sxSEQtYg72Vdwn1GuEjPzbQjowe8lF4=
@@ -77,10 +61,6 @@
 		</dict>
 		<key>Modules/module.modulemap</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			ktK70rF16fXSoIAC7iZ/U8XSMzU=
-			</data>
 			<key>hash2</key>
 			<data>
 			M5o+QbqjusYup+pGsKFT5aEbRCY6HhjSXXgFJ4indxY=
