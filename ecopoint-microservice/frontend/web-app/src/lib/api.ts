@@ -47,7 +47,7 @@ class ApiClient {
     return this.request('/users/me');
   }
 
-  async updateUser(data: any) {
+  async updateUser(data: Record<string, unknown>) {
     return this.request('/users/me', {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -59,14 +59,14 @@ class ApiClient {
     return this.request('/addresses');
   }
 
-  async createAddress(data: any) {
+  async createAddress(data: Record<string, unknown>) {
     return this.request('/addresses', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateAddress(id: string, data: any) {
+  async updateAddress(id: string, data: Record<string, unknown>) {
     return this.request(`/addresses/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -94,14 +94,14 @@ class ApiClient {
     return this.request(`/bookings/${id}`);
   }
 
-  async createBooking(data: any) {
+  async createBooking(data: Record<string, unknown>) {
     return this.request('/bookings', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateBooking(id: string, data: any) {
+  async updateBooking(id: string, data: Record<string, unknown>) {
     return this.request(`/bookings/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

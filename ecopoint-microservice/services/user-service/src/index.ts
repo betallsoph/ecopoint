@@ -25,9 +25,6 @@ async function startServer() {
   const server = new ApolloServer({
     typeDefs: [userTypeDefs],
     resolvers: [userResolvers],
-    context: async ({ req }) => {
-      return await authMiddleware(req);
-    },
     introspection: process.env.NODE_ENV !== 'production',
     plugins: [
       // Add any plugins here

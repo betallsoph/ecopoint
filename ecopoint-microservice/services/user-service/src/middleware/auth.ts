@@ -1,4 +1,4 @@
-import { AuthenticationError } from 'apollo-server-express';
+import { GraphQLError } from 'graphql';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 
@@ -20,13 +20,17 @@ export const authMiddleware = async (req: any): Promise<AuthContext> => {
     const user = await User.findById(decoded.userId);
     
     if (!user || !user.isActive) {
-      throw new AuthenticationError('Invalid or expired token');
+      throw new GraphQLError('Invalid or expired token', {
+        extensions: { code: 'UNAUTHENTICATED' }
+      });
     }
 
     return { user };
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      throw new AuthenticationError('Invalid token');
+      throw new GraphQLError('Invalid token', {
+        extensions: { code: 'UNAUTHENTICATED' }
+      });
     }
     throw error;
   }
@@ -34,14 +38,18 @@ export const authMiddleware = async (req: any): Promise<AuthContext> => {
 
 export const requireAuth = (user?: IUser) => {
   if (!user) {
-    throw new AuthenticationError('Authentication required');
+    throw new GraphQLError('Authentication required', {
+      extensions: { code: 'UNAUTHENTICATED' }
+    });
   }
   return user;
 };
 
 export const requireRole = (user: IUser, allowedRoles: string[]) => {
   if (!allowedRoles.includes(user.role)) {
-    throw new AuthenticationError('Insufficient permissions');
+    throw new GraphQLError('Insufficient permissions', {
+      extensions: { code: 'FORBIDDEN' }
+    });
   }
   return user;
 };
