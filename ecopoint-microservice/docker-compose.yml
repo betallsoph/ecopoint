@@ -1,0 +1,153 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: ecopoint-postgres
+    environment:
+      POSTGRES_DB: ecopoint
+      POSTGRES_USER: ecopoint
+      POSTGRES_PASSWORD: ecopoint123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docs/database-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    networks:
+      - ecopoint-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecopoint -d ecopoint"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: ecopoint-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecopoint-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # User Service (Node.js + GraphQL)
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: ecopoint-user-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - MONGODB_URI=mongodb://mongo:27017/ecopoint_users
+      - JWT_SECRET=your-super-secret-jwt-key-here
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "4000:4000"
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - ecopoint-network
+    volumes:
+      - ./services/user-service:/app
+      - /app/node_modules
+
+  # MongoDB (for User Service)
+  mongo:
+    image: mongo:7
+    container_name: ecopoint-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ecopoint
+      MONGO_INITDB_ROOT_PASSWORD: ecopoint123
+      MONGO_INITDB_DATABASE: ecopoint_users
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - ecopoint-network
+
+  # Booking Service (Go + gRPC)
+  booking-service:
+    build:
+      context: ./services/booking-service
+      dockerfile: Dockerfile
+    container_name: ecopoint-booking-service
+    environment:
+      - DATABASE_URL=postgresql://ecopoint:ecopoint123@postgres:5432/ecopoint?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - GRPC_PORT=50051
+    ports:
+      - "50051:50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ecopoint-network
+
+  # API Gateway (Go)
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: ecopoint-api-gateway
+    environment:
+      - PORT=8080
+      - ENVIRONMENT=development
+      - USER_SERVICE_URL=http://user-service:4000
+      - BOOKING_SERVICE_URL=booking-service:50051
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+      - FIREBASE_PROJECT_ID=your-firebase-project-id
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - booking-service
+    networks:
+      - ecopoint-network
+
+  # Web Frontend (Next.js)
+  web-app:
+    build:
+      context: ./frontend/web-app
+      dockerfile: Dockerfile
+    container_name: ecopoint-web-app
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
+      - NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4000/graphql
+      - NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+      - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+      - NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+      - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+      - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+      - NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+      - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    networks:
+      - ecopoint-network
+    volumes:
+      - ./frontend/web-app:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
+
+networks:
+  ecopoint-network:
+    driver: bridge

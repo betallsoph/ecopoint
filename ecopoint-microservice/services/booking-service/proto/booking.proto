@@ -1,0 +1,197 @@
+syntax = "proto3";
+
+package booking;
+
+option go_package = "ecopoint/booking-service/proto";
+
+// Booking service definition
+service BookingService {
+  rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
+  rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
+  rpc ListBookings(ListBookingsRequest) returns (ListBookingsResponse);
+  rpc UpdateBooking(UpdateBookingRequest) returns (UpdateBookingResponse);
+  rpc CancelBooking(CancelBookingRequest) returns (CancelBookingResponse);
+  rpc AssignCollector(AssignCollectorRequest) returns (AssignCollectorResponse);
+  rpc UpdateBookingStatus(UpdateBookingStatusRequest) returns (UpdateBookingStatusResponse);
+  rpc GetCollectorBookings(GetCollectorBookingsRequest) returns (GetCollectorBookingsResponse);
+}
+
+// Booking status enum
+enum BookingStatus {
+  PENDING = 0;
+  CONFIRMED = 1;
+  ASSIGNED = 2;
+  IN_PROGRESS = 3;
+  COMPLETED = 4;
+  CANCELLED = 5;
+  FAILED = 6;
+}
+
+// Waste type enum
+enum WasteType {
+  PLASTIC = 0;
+  PAPER = 1;
+  GLASS = 2;
+  METAL = 3;
+  ORGANIC = 4;
+  ELECTRONIC = 5;
+  OTHER = 6;
+}
+
+// Booking message
+message Booking {
+  string id = 1;
+  string user_id = 2;
+  string collector_id = 3;
+  WasteType waste_type = 4;
+  int32 quantity = 5;
+  string description = 6;
+  Address pickup_address = 7;
+  string scheduled_date = 8;
+  string scheduled_time = 9;
+  BookingStatus status = 10;
+  double estimated_price = 11;
+  double final_price = 12;
+  string notes = 13;
+  repeated string images = 14;
+  string created_at = 15;
+  string updated_at = 16;
+}
+
+// Address message
+message Address {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string zip_code = 4;
+  double latitude = 5;
+  double longitude = 6;
+}
+
+// Create booking request
+message CreateBookingRequest {
+  string user_id = 1;
+  WasteType waste_type = 2;
+  int32 quantity = 3;
+  string description = 4;
+  Address pickup_address = 5;
+  string scheduled_date = 6;
+  string scheduled_time = 7;
+  string notes = 8;
+  repeated string images = 9;
+}
+
+// Create booking response
+message CreateBookingResponse {
+  bool success = 1;
+  string message = 2;
+  Booking booking = 3;
+}
+
+// Get booking request
+message GetBookingRequest {
+  string booking_id = 1;
+}
+
+// Get booking response
+message GetBookingResponse {
+  bool success = 1;
+  string message = 2;
+  Booking booking = 3;
+}
+
+// List bookings request
+message ListBookingsRequest {
+  string user_id = 1;
+  string collector_id = 2;
+  BookingStatus status = 3;
+  int32 page = 4;
+  int32 limit = 5;
+}
+
+// List bookings response
+message ListBookingsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Booking bookings = 3;
+  int32 total = 4;
+  int32 page = 5;
+  int32 limit = 6;
+}
+
+// Update booking request
+message UpdateBookingRequest {
+  string booking_id = 1;
+  WasteType waste_type = 2;
+  int32 quantity = 3;
+  string description = 4;
+  Address pickup_address = 5;
+  string scheduled_date = 6;
+  string scheduled_time = 7;
+  string notes = 8;
+  repeated string images = 9;
+}
+
+// Update booking response
+message UpdateBookingResponse {
+  bool success = 1;
+  string message = 2;
+  Booking booking = 3;
+}
+
+// Cancel booking request
+message CancelBookingRequest {
+  string booking_id = 1;
+  string reason = 2;
+}
+
+// Cancel booking response
+message CancelBookingResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Assign collector request
+message AssignCollectorRequest {
+  string booking_id = 1;
+  string collector_id = 2;
+}
+
+// Assign collector response
+message AssignCollectorResponse {
+  bool success = 1;
+  string message = 2;
+  Booking booking = 3;
+}
+
+// Update booking status request
+message UpdateBookingStatusRequest {
+  string booking_id = 1;
+  BookingStatus status = 2;
+  string notes = 3;
+}
+
+// Update booking status response
+message UpdateBookingStatusResponse {
+  bool success = 1;
+  string message = 2;
+  Booking booking = 3;
+}
+
+// Get collector bookings request
+message GetCollectorBookingsRequest {
+  string collector_id = 1;
+  BookingStatus status = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+// Get collector bookings response
+message GetCollectorBookingsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Booking bookings = 3;
+  int32 total = 4;
+  int32 page = 5;
+  int32 limit = 6;
+}
