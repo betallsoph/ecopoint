@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/dev_mode_service.dart';
 import '../home/home_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -17,6 +19,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _isDevMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkDevMode();
+  }
+
+  Future<void> _checkDevMode() async {
+    final devMode = await DevModeService.isDevModeEnabled();
+    setState(() {
+      _isDevMode = devMode;
+    });
+  }
 
   @override
   void dispose() {
@@ -33,15 +49,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+      if (_isDevMode) {
+        // Mock sign in for dev mode
+        await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+        
+        final mockUser = {
+          'uid': 'dev-user-123',
+          'email': _emailController.text.trim(),
+          'displayName': 'Dev User',
+          'role': 'USER',
+          'photoURL': null,
+        };
+        
+        await DevModeService.setMockUser(mockUser);
+        
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
+      } else {
+        // Real Firebase sign in
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
+
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
@@ -78,6 +116,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _toggleDevMode() async {
+    final newDevMode = !_isDevMode;
+    await DevModeService.setDevModeEnabled(newDevMode);
+    setState(() {
+      _isDevMode = newDevMode;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,6 +136,82 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Dev Mode Toggle
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _isDevMode ? Colors.yellow.shade100 : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: _isDevMode ? Colors.yellow.shade400 : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.developer_mode,
+                        color: _isDevMode ? Colors.orange : Colors.grey,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _isDevMode ? '🚀 Dev Mode ON' : 'Dev Mode OFF',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _isDevMode ? Colors.orange.shade800 : Colors.grey.shade600,
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: _isDevMode,
+                        onChanged: (value) => _toggleDevMode(),
+                        activeColor: Colors.orange,
+                      ),
+                    ],
+                  ),
+                ),
+                
+                if (_isDevMode) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.info, color: Colors.green.shade600, size: 16),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Dev Mode Active',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green.shade800,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Use any email/password to login. Mock data will be used.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.green.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                
+                const SizedBox(height: 32),
+                
                 Icon(
                   Icons.recycling,
                   size: 80,
@@ -115,16 +237,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.email),
+                    border: const OutlineInputBorder(),
+                    hintText: _isDevMode ? 'Any email works in dev mode' : null,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    if (!value.contains('@')) {
+                    if (!_isDevMode && !value.contains('@')) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -148,12 +271,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       },
                     ),
                     border: const OutlineInputBorder(),
+                    hintText: _isDevMode ? 'Any password works in dev mode' : null,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
                     }
-                    if (value.length < 6) {
+                    if (!_isDevMode && value.length < 6) {
                       return 'Password must be at least 6 characters';
                     }
                     return null;

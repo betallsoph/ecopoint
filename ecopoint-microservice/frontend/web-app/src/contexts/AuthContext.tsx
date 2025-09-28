@@ -10,6 +10,7 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { useDevMode } from './DevModeContext';
 
 interface User {
   uid: string;
@@ -33,8 +34,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isDevMode, mockUser } = useDevMode();
 
   useEffect(() => {
+    if (isDevMode && mockUser) {
+      // Use mock user in dev mode
+      const userData: User = {
+        uid: mockUser.uid as string,
+        email: mockUser.email as string | null,
+        displayName: mockUser.displayName as string | null,
+        photoURL: mockUser.photoURL as string | null,
+        role: mockUser.role as 'USER' | 'COLLECTOR' | 'ADMIN' || 'USER',
+      };
+      setUser(userData);
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         // TODO: Fetch user role from your backend
@@ -53,11 +69,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isDevMode, mockUser]);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
+      if (isDevMode) {
+        // Mock sign in for dev mode
+        if (mockUser) {
+          const userData: User = {
+            uid: mockUser.uid as string,
+            email: mockUser.email as string | null,
+            displayName: mockUser.displayName as string | null,
+            photoURL: mockUser.photoURL as string | null,
+            role: mockUser.role as 'USER' | 'COLLECTOR' | 'ADMIN' || 'USER',
+          };
+          setUser(userData);
+        }
+        return;
+      }
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       console.error('Sign in error:', error);
@@ -85,6 +115,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     setLoading(true);
     try {
+      if (isDevMode) {
+        // Mock logout for dev mode
+        setUser(null);
+        return;
+      }
       await signOut(auth);
     } catch (error) {
       console.error('Logout error:', error);
