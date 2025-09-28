@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { DevModeProvider } from "@/contexts/DevModeContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import DevModeToggle from "@/components/DevModeToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +30,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <DevModeProvider>
+          <AuthProvider>
+            {children}
+            <DevModeToggle />
+          </AuthProvider>
+        </DevModeProvider>
       </body>
     </html>
   );
