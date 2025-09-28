@@ -5,17 +5,41 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"ecopoint/api-gateway/internal/middleware"
+	"ecopoint/api-gateway/internal/services"
+	httpClient "ecopoint/api-gateway/pkg/http"
 )
+
+var apiService *services.APIService
+
+func SetAPIService(service *services.APIService) {
+	apiService = service
+}
 
 // CreateUser handles user creation
 func CreateUser(c *gin.Context) {
-	// TODO: Implement user creation
-	// 1. Validate request body
-	// 2. Call user service
-	// 3. Return response
-	
-	c.JSON(http.StatusOK, gin.H{
-		"message": "CreateUser endpoint - TODO: Implement",
+	var req httpClient.CreateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get token from header
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+		return
+	}
+
+	user, err := apiService.CreateUser(c.Request.Context(), &req, token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"message": "User created successfully",
+		"user":    user,
 	})
 }
 
@@ -27,9 +51,22 @@ func GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-	// TODO: Call user service to get full user details
+	// Get token from header
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+		return
+	}
+
+	userDetails, err := apiService.GetCurrentUser(c.Request.Context(), token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"user": user,
+		"success": true,
+		"user":    userDetails,
 	})
 }
 

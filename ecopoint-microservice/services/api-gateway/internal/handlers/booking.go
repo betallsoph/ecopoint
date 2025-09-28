@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"ecopoint/api-gateway/internal/middleware"
+	"ecopoint/api-gateway/pkg/grpc"
 )
 
 // CreateBooking handles booking creation
@@ -15,14 +17,25 @@ func CreateBooking(c *gin.Context) {
 		return
 	}
 
-	// TODO: Implement booking creation
-	// 1. Validate request body
-	// 2. Call booking service via gRPC
-	// 3. Return created booking
-	
-	c.JSON(http.StatusOK, gin.H{
-		"message": "CreateBooking endpoint - TODO: Implement",
-		"user_id": user.UID,
+	var req grpc.CreateBookingRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Set user ID from context
+	req.UserID = user.UID
+
+	resp, err := apiService.CreateBooking(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"success": resp.Success,
+		"message": resp.Message,
+		"booking": resp.Booking,
 	})
 }
 
@@ -34,14 +47,29 @@ func GetBookings(c *gin.Context) {
 		return
 	}
 
-	// TODO: Implement get bookings
-	// 1. Parse query parameters (status, page, limit)
-	// 2. Call booking service via gRPC
-	// 3. Return bookings list
-	
+	// Parse query parameters
+	status := c.Query("status")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	var statusPtr *string
+	if status != "" {
+		statusPtr = &status
+	}
+
+	resp, err := apiService.ListBookings(c.Request.Context(), &user.UID, nil, statusPtr, page, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "GetBookings endpoint - TODO: Implement",
-		"user_id": user.UID,
+		"success":  resp.Success,
+		"message":  resp.Message,
+		"bookings": resp.Bookings,
+		"total":    resp.Total,
+		"page":     resp.Page,
+		"limit":    resp.Limit,
 	})
 }
 

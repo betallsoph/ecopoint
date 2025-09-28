@@ -6,6 +6,7 @@ import (
 
 	"ecopoint/api-gateway/internal/handlers"
 	"ecopoint/api-gateway/internal/middleware"
+	"ecopoint/api-gateway/internal/services"
 	"ecopoint/api-gateway/pkg/config"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,16 @@ func main() {
 
 	// Load configuration
 	cfg := config.Load()
+
+	// Initialize API service
+	apiService, err := services.NewAPIService(cfg.UserServiceURL, cfg.BookingServiceURL)
+	if err != nil {
+		log.Fatal("Failed to initialize API service:", err)
+	}
+	defer apiService.Close()
+
+	// Set API service in handlers
+	handlers.SetAPIService(apiService)
 
 	// Set Gin mode
 	if cfg.Environment == "production" {
